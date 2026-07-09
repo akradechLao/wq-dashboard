@@ -19,7 +19,7 @@ function getPassword(): string {
 }
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSettingsAuthed, setIsSettingsAuthed] = useState(false);
   const [adminPassword, setAdminPassword] = useState(getPassword);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [view, setView] = useState<View>({ page: 'summary' });
@@ -61,17 +61,13 @@ function App() {
   }, []);
 
   const handleLogout = useCallback(() => {
-    setIsLoggedIn(false);
+    setIsSettingsAuthed(false);
     setActiveTab('dashboard');
     setView({ page: 'summary' });
   }, []);
 
-  const handleLogin = useCallback(() => {
-    setIsLoggedIn(true);
-  }, []);
-
   const handleTabChange = useCallback((tab: string) => {
-    if (tab === 'settings' && !isLoggedIn) {
+    if (tab === 'settings' && !isSettingsAuthed) {
       setActiveTab('settings-auth');
       return;
     }
@@ -79,22 +75,16 @@ function App() {
     if (tab !== 'dashboard') {
       setView({ page: 'summary' });
     }
-  }, [isLoggedIn]);
+  }, [isSettingsAuthed]);
 
   const totalUnread = stationsData.reduce((sum, s) => sum + s.alerts.filter(a => !a.acknowledged).length, 0);
 
-  if (!isLoggedIn && activeTab === 'settings-auth') {
+  if (activeTab === 'settings-auth') {
     return (
       <LoginPage
-        onLogin={() => { handleLogin(); setActiveTab('settings'); }}
+        onLogin={() => { setIsSettingsAuthed(true); setActiveTab('settings'); }}
         storedPassword={adminPassword}
       />
-    );
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <LoginPage onLogin={handleLogin} storedPassword={adminPassword} />
     );
   }
 
