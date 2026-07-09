@@ -41,8 +41,8 @@ export function LoginPage({ onLogin, onBack, storedPassword }: LoginPageProps) {
           <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-200 mb-4">
             <Droplets className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Water Quality Monitor</h1>
-          <p className="text-sm text-slate-400 mt-1">Sign in to access the dashboard</p>
+          <h1 className="text-2xl font-bold text-slate-800">Online Wastewater Monitor</h1>
+          <p className="text-sm text-slate-400 mt-1">Amata City Industrial Estate, Rayong</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8">
@@ -96,7 +96,7 @@ export function LoginPage({ onLogin, onBack, storedPassword }: LoginPageProps) {
         </div>
 
         <p className="text-center text-[11px] text-slate-400 mt-6">
-          Water Quality Live Monitoring System v1.0
+          Online Wastewater Quality Monitoring System v1.0
         </p>
 
         <button

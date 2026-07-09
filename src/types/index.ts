@@ -11,6 +11,8 @@ export interface WaterParameter {
   warningHigh: number;
   criticalLow: number;
   criticalHigh: number;
+  legalLow: number;
+  legalHigh: number;
   trend: number;
   history: number[];
   status: ParameterStatus;

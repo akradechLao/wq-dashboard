@@ -13,12 +13,13 @@ interface SettingsPageProps {
 }
 
 const defaultParamDefs = [
-  { id: 'ph', name: 'pH', unit: '', min: 0, max: 14, legalLow: 6.5, legalHigh: 8.5 },
-  { id: 'tds', name: 'TDS', unit: 'mg/L', min: 0, max: 2000, legalLow: 0, legalHigh: 1000 },
-  { id: 'conductivity', name: 'Conductivity', unit: 'μS/cm', min: 0, max: 5000, legalLow: 0, legalHigh: 2500 },
-  { id: 'do', name: 'DO', unit: 'mg/L', min: 0, max: 20, legalLow: 5, legalHigh: 14 },
-  { id: 'temperature', name: 'Temperature', unit: '°C', min: 0, max: 50, legalLow: 15, legalHigh: 35 },
-  { id: 'ec', name: 'EC', unit: 'mS/cm', min: 0, max: 10, legalLow: 0.2, legalHigh: 5 },
+  { id: 'ph', name: 'pH', unit: '', min: 0, max: 14, legalLow: 6.0, legalHigh: 9.0 },
+  { id: 'temperature', name: 'Temperature', unit: '°C', min: 0, max: 60, legalLow: 0, legalHigh: 40 },
+  { id: 'conductivity', name: 'Conductivity/TDS', unit: 'μS/cm', min: 0, max: 10000, legalLow: 0, legalHigh: 5000 },
+  { id: 'turbidity', name: 'Turbidity', unit: 'NTU', min: 0, max: 500, legalLow: 0, legalHigh: 100 },
+  { id: 'do', name: 'DO', unit: 'mg/L', min: 0, max: 20, legalLow: 2, legalHigh: 20 },
+  { id: 'cod', name: 'COD', unit: 'mg/L', min: 0, max: 1000, legalLow: 0, legalHigh: 120 },
+  { id: 'bod5', name: 'BOD5', unit: 'mg/L', min: 0, max: 500, legalLow: 0, legalHigh: 20 },
 ];
 
 function StationForm({
@@ -435,6 +436,8 @@ function ParameterForm({
               warningHigh: parseFloat(warningHigh) || 100,
               criticalLow: parseFloat(criticalLow) || 0,
               criticalHigh: parseFloat(criticalHigh) || 100,
+              legalLow: parseFloat(legalLow) || 0,
+              legalHigh: parseFloat(legalHigh) || 100,
               trend: 0,
               history: param?.history || [0],
               status: 'normal',

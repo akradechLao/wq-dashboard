@@ -28,10 +28,10 @@ export function Header({ lastSync, unreadCount, stationName }: HeaderProps) {
       <div className="flex items-center gap-3 lg:gap-4 pl-10 lg:pl-0">
         <div>
           <h1 className="text-sm lg:text-lg font-semibold text-slate-800 leading-tight">
-            Water Quality Live Monitor
+            Online Wastewater Monitor
           </h1>
           <p className="text-[10px] lg:text-xs text-slate-400">
-            {stationName || 'All Stations'}
+            {stationName || 'Amata City Industrial Estate, Rayong'}
           </p>
         </div>
       </div>

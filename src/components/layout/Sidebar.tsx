@@ -38,7 +38,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </div>
         {!collapsed && (
           <span className="text-sm font-semibold text-slate-800 whitespace-nowrap">
-            WaterMonitor
+            WQ Monitor
           </span>
         )}
       </div>

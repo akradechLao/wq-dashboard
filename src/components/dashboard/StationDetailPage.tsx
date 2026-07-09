@@ -1,7 +1,7 @@
 import ReactECharts from 'echarts-for-react';
 import {
   ArrowLeft, MapPin, Wifi, Clock, TrendingUp, TrendingDown, Minus,
-  AlertTriangle, Activity, Droplets, Thermometer, Waves, Zap, Gauge,
+  AlertTriangle, Activity, Droplets, Thermometer, Waves, Zap, Cloud,
 } from 'lucide-react';
 import type { Station, WaterParameter } from '../../types';
 import { generateTrendData, generateHeatmapData } from '../../data/mockData';
@@ -13,11 +13,11 @@ interface StationDetailPageProps {
 }
 
 const paramIcons: Record<string, typeof Activity> = {
-  ph: Droplets, tds: Waves, conductivity: Zap, do: Activity, temperature: Thermometer, ec: Gauge,
+  ph: Droplets, temperature: Thermometer, conductivity: Waves, turbidity: Cloud, do: Activity, cod: Zap, bod5: AlertTriangle,
 };
 
 const paramColors: Record<string, string> = {
-  ph: '#3b82f6', tds: '#8b5cf6', conductivity: '#06b6d4', do: '#10b981', temperature: '#f59e0b', ec: '#ec4899',
+  ph: '#3b82f6', temperature: '#f59e0b', conductivity: '#06b6d4', turbidity: '#8b5cf6', do: '#10b981', cod: '#ef4444', bod5: '#ec4899',
 };
 
 function ParameterDetailCard({ param, index }: { param: WaterParameter; index: number }) {
@@ -182,8 +182,8 @@ function MultiAxisTrendChart({ station }: { station: Station }) {
 function CorrelationScatterChart({ station }: { station: Station }) {
   const params = station.parameters;
   const scatterPairs = [
+    { x: params.find(p => p.id === 'cod')!, y: params.find(p => p.id === 'bod5')!, xLabel: 'COD', yLabel: 'BOD5' },
     { x: params.find(p => p.id === 'ph')!, y: params.find(p => p.id === 'do')!, xLabel: 'pH', yLabel: 'DO' },
-    { x: params.find(p => p.id === 'tds')!, y: params.find(p => p.id === 'ec')!, xLabel: 'TDS', yLabel: 'EC' },
   ];
 
   const option = {
