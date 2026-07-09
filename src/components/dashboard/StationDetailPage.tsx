@@ -106,8 +106,9 @@ function ParameterDetailCard({ param, index }: { param: WaterParameter; index: n
 function MultiAxisTrendChart({ station }: { station: Station }) {
   const trendData = useMemo(() => generateTrendData(station.parameters), [station]);
 
-  const lowScaleParams = station.parameters.filter(p => p.max <= 100);
-  const highScaleParams = station.parameters.filter(p => p.max > 100);
+  const highScaleIds = ['conductivity', 'cod', 'bod5'];
+  const lowScaleParams = station.parameters.filter(p => !highScaleIds.includes(p.id));
+  const highScaleParams = station.parameters.filter(p => highScaleIds.includes(p.id));
 
   const yAxisList = [
     ...(lowScaleParams.length > 0 ? [{
@@ -157,7 +158,7 @@ function MultiAxisTrendChart({ station }: { station: Station }) {
     },
     yAxis: yAxisList,
     series: station.parameters.map((p) => {
-      const isHighScale = p.max > 100;
+      const isHighScale = highScaleIds.includes(p.id);
       const yAxisIndex = isHighScale ? (lowScaleParams.length > 0 ? 1 : 0) : 0;
       return {
         name: p.name,
