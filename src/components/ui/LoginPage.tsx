@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Droplets, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Droplets, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
 
 interface LoginPageProps {
   onLogin: () => void;
+  onBack: () => void;
   storedPassword: string;
 }
 
-export function LoginPage({ onLogin, storedPassword }: LoginPageProps) {
+export function LoginPage({ onLogin, onBack, storedPassword }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -97,6 +98,14 @@ export function LoginPage({ onLogin, storedPassword }: LoginPageProps) {
         <p className="text-center text-[11px] text-slate-400 mt-6">
           Water Quality Live Monitoring System v1.0
         </p>
+
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center gap-2 w-full mt-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </button>
       </div>
     </div>
   );

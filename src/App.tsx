@@ -79,10 +79,15 @@ function App() {
 
   const totalUnread = stationsData.reduce((sum, s) => sum + s.alerts.filter(a => !a.acknowledged).length, 0);
 
+  const handleBackToDashboard = useCallback(() => {
+    setActiveTab('dashboard');
+  }, []);
+
   if (activeTab === 'settings-auth') {
     return (
       <LoginPage
         onLogin={() => { setIsSettingsAuthed(true); setActiveTab('settings'); }}
+        onBack={handleBackToDashboard}
         storedPassword={adminPassword}
       />
     );
