@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
+import { LoginPage } from './components/ui/LoginPage';
 import { StationSummaryPage } from './components/dashboard/StationSummaryPage';
 import { StationDetailPage } from './components/dashboard/StationDetailPage';
 import { AnalyticsPage } from './components/dashboard/AnalyticsPage';
@@ -11,7 +12,15 @@ import type { Station } from './types';
 
 type View = { page: 'summary' } | { page: 'detail'; stationId: string };
 
+const DEFAULT_PASSWORD = '1975';
+
+function getPassword(): string {
+  return localStorage.getItem('wq_admin_pwd') || DEFAULT_PASSWORD;
+}
+
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [adminPassword, setAdminPassword] = useState(getPassword);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [view, setView] = useState<View>({ page: 'summary' });
   const [stationsData, setStationsData] = useState<Station[]>(initialStations);
@@ -46,11 +55,52 @@ function App() {
     setStationsData(newStations);
   }, []);
 
+  const handleChangePassword = useCallback((newPwd: string) => {
+    setAdminPassword(newPwd);
+    localStorage.setItem('wq_admin_pwd', newPwd);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    setIsLoggedIn(false);
+    setActiveTab('dashboard');
+    setView({ page: 'summary' });
+  }, []);
+
+  const handleLogin = useCallback(() => {
+    setIsLoggedIn(true);
+  }, []);
+
+  const handleTabChange = useCallback((tab: string) => {
+    if (tab === 'settings' && !isLoggedIn) {
+      setActiveTab('settings-auth');
+      return;
+    }
+    setActiveTab(tab);
+    if (tab !== 'dashboard') {
+      setView({ page: 'summary' });
+    }
+  }, [isLoggedIn]);
+
   const totalUnread = stationsData.reduce((sum, s) => sum + s.alerts.filter(a => !a.acknowledged).length, 0);
+
+  if (!isLoggedIn && activeTab === 'settings-auth') {
+    return (
+      <LoginPage
+        onLogin={() => { handleLogin(); setActiveTab('settings'); }}
+        storedPassword={adminPassword}
+      />
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <LoginPage onLogin={handleLogin} storedPassword={adminPassword} />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
       <div className="ml-[220px] transition-all duration-300">
         <Header lastSync={new Date()} unreadCount={totalUnread} stationName={currentStation?.name} />
         <main className="min-h-[calc(100vh-4rem)]">
@@ -67,7 +117,12 @@ function App() {
             <AlertsPage stations={stationsData} onAcknowledge={handleAcknowledgeAlert} />
           )}
           {activeTab === 'settings' && (
-            <SettingsPage stations={stationsData} onUpdateStations={handleUpdateStations} />
+            <SettingsPage
+              stations={stationsData}
+              onUpdateStations={handleUpdateStations}
+              onChangePassword={handleChangePassword}
+              onLogout={handleLogout}
+            />
           )}
         </main>
       </div>

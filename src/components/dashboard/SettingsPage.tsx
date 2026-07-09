@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import {
   Settings, Plus, Trash2, Save, X, MapPin, ChevronDown, ChevronRight,
-  AlertTriangle, CheckCircle2, Edit3, Copy, Wifi, WifiOff,
+  AlertTriangle, CheckCircle2, Edit3, Copy, Wifi, WifiOff, Lock, Eye, EyeOff, LogOut,
 } from 'lucide-react';
 import type { Station, WaterParameter } from '../../types';
 
 interface SettingsPageProps {
   stations: Station[];
   onUpdateStations: (stations: Station[]) => void;
+  onChangePassword: (newPassword: string) => void;
+  onLogout: () => void;
 }
 
 const defaultParamDefs = [
@@ -455,8 +457,129 @@ function ParameterForm({
   );
 }
 
-export function SettingsPage({ stations, onUpdateStations }: SettingsPageProps) {
-  const [activeSection, setActiveSection] = useState<'stations' | 'parameters'>('stations');
+function SecuritySection({ onChangePassword, onLogout }: { onChangePassword: (p: string) => void; onLogout: () => void }) {
+  const [currentPwd, setCurrentPwd] = useState('');
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleChange = () => {
+    if (currentPwd !== localStorage.getItem('wq_admin_pwd') || currentPwd !== '1975') {
+      // If stored password doesn't exist yet, use default 1975
+      const stored = localStorage.getItem('wq_admin_pwd') || '1975';
+      if (currentPwd !== stored) {
+        setMsg({ type: 'error', text: 'Current password is incorrect' });
+        return;
+      }
+    }
+    if (newPwd.length < 4) {
+      setMsg({ type: 'error', text: 'New password must be at least 4 characters' });
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      setMsg({ type: 'error', text: 'New passwords do not match' });
+      return;
+    }
+    onChangePassword(newPwd);
+    setCurrentPwd('');
+    setNewPwd('');
+    setConfirmPwd('');
+    setMsg({ type: 'success', text: 'Password changed successfully' });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <Lock className="w-5 h-5 text-primary-500" />
+          <h3 className="text-base font-semibold text-slate-800">Change Password</h3>
+        </div>
+
+        <div className="max-w-md space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Current Password</label>
+            <div className="relative">
+              <input
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPwd}
+                onChange={e => setCurrentPwd(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 pr-10"
+              />
+              <button type="button" onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">New Password</label>
+            <div className="relative">
+              <input
+                type={showNew ? 'text' : 'password'}
+                value={newPwd}
+                onChange={e => setNewPwd(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 pr-10"
+              />
+              <button type="button" onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmPwd}
+              onChange={e => setConfirmPwd(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          {msg && (
+            <div className={`flex items-center gap-2 p-3 rounded-lg text-xs font-medium fade-in ${
+              msg.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+            }`}>
+              {msg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+              {msg.text}
+            </div>
+          )}
+
+          <button
+            onClick={handleChange}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            Update Password
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-800">Session</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Sign out of the admin panel</p>
+          </div>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1.5 px-4 py-2 text-rose-600 bg-rose-50 hover:bg-rose-100 text-sm font-medium rounded-lg transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SettingsPage({ stations, onUpdateStations, onChangePassword, onLogout }: SettingsPageProps) {
+  const [activeSection, setActiveSection] = useState<'stations' | 'parameters' | 'security'>('stations');
   const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
   const [showAddStation, setShowAddStation] = useState(false);
   const [editStation, setEditStation] = useState<Station | null>(null);
@@ -537,6 +660,17 @@ export function SettingsPage({ stations, onUpdateStations }: SettingsPageProps) 
           }`}
         >
           Parameter Config
+        </button>
+        <button
+          onClick={() => setActiveSection('security')}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            activeSection === 'security' ? 'bg-primary-50 text-primary-600 border border-primary-200' : 'text-slate-500 hover:bg-slate-100 border border-transparent'
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <Lock className="w-4 h-4" />
+            Security
+          </span>
         </button>
       </div>
 
@@ -641,6 +775,10 @@ export function SettingsPage({ stations, onUpdateStations }: SettingsPageProps) 
             </div>
           )}
         </div>
+      )}
+
+      {activeSection === 'security' && (
+        <SecuritySection onChangePassword={onChangePassword} onLogout={onLogout} />
       )}
     </div>
   );

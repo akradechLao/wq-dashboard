@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Bell, Settings, Droplets } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Bell, Settings, Droplets, Lock } from 'lucide-react';
 import { useState } from 'react';
 
 interface SidebarProps {
@@ -54,6 +54,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 }`}
               />
               {!collapsed && <span className="text-sm">{item.label}</span>}
+              {!collapsed && item.id === 'settings' && (
+                <Lock className="w-3 h-3 text-slate-300 ml-auto" />
+              )}
             </button>
           );
         })}
