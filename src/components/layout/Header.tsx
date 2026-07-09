@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 interface HeaderProps {
   lastSync: Date;
   unreadCount: number;
+  stationName?: string;
 }
 
-export function Header({ lastSync, unreadCount }: HeaderProps) {
+export function Header({ lastSync, unreadCount, stationName }: HeaderProps) {
   const [syncText, setSyncText] = useState('just now');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -30,7 +31,7 @@ export function Header({ lastSync, unreadCount }: HeaderProps) {
             Water Quality Live Monitor
           </h1>
           <p className="text-xs text-slate-400">
-            Station A - Chao Phraya River, Bangkok
+            {stationName || 'All Stations'}
           </p>
         </div>
       </div>

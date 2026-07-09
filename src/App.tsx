@@ -29,7 +29,7 @@ function App() {
     <div className="min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="ml-[220px] transition-all duration-300">
-        <Header lastSync={new Date()} unreadCount={totalUnread} />
+        <Header lastSync={new Date()} unreadCount={totalUnread} stationName={currentStation?.name} />
         <main className="min-h-[calc(100vh-4rem)]">
           {activeTab === 'dashboard' && view.page === 'summary' && (
             <StationSummaryPage stations={stations} onSelectStation={handleSelectStation} />
