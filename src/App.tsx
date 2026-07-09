@@ -5,6 +5,7 @@ import { StationSummaryPage } from './components/dashboard/StationSummaryPage';
 import { StationDetailPage } from './components/dashboard/StationDetailPage';
 import { AnalyticsPage } from './components/dashboard/AnalyticsPage';
 import { AlertsPage } from './components/dashboard/AlertsPage';
+import { SettingsPage } from './components/dashboard/SettingsPage';
 import { stations as initialStations } from './data/mockData';
 import type { Station } from './types';
 
@@ -41,6 +42,10 @@ function App() {
     );
   }, []);
 
+  const handleUpdateStations = useCallback((newStations: Station[]) => {
+    setStationsData(newStations);
+  }, []);
+
   const totalUnread = stationsData.reduce((sum, s) => sum + s.alerts.filter(a => !a.acknowledged).length, 0);
 
   return (
@@ -62,13 +67,7 @@ function App() {
             <AlertsPage stations={stationsData} onAcknowledge={handleAcknowledgeAlert} />
           )}
           {activeTab === 'settings' && (
-            <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-              <div className="text-center">
-                <p className="text-5xl mb-4">⚙️</p>
-                <p className="text-lg font-semibold text-slate-700">Settings</p>
-                <p className="text-sm text-slate-400 mt-1">Configuration panel coming soon</p>
-              </div>
-            </div>
+            <SettingsPage stations={stationsData} onUpdateStations={handleUpdateStations} />
           )}
         </main>
       </div>
