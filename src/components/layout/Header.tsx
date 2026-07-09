@@ -24,19 +24,19 @@ export function Header({ lastSync, unreadCount, stationName }: HeaderProps) {
   }, [lastSync]);
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
-      <div className="flex items-center gap-4">
+    <header className="h-14 lg:h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      <div className="flex items-center gap-3 lg:gap-4 pl-10 lg:pl-0">
         <div>
-          <h1 className="text-lg font-semibold text-slate-800 leading-tight">
+          <h1 className="text-sm lg:text-lg font-semibold text-slate-800 leading-tight">
             Water Quality Live Monitor
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-[10px] lg:text-xs text-slate-400">
             {stationName || 'All Stations'}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 lg:gap-3">
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full">
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -54,7 +54,7 @@ export function Header({ lastSync, unreadCount, stationName }: HeaderProps) {
           <Search className="w-5 h-5" />
         </button>
 
-        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors hidden sm:flex">
           <RefreshCw className="w-5 h-5" />
         </button>
 
@@ -69,7 +69,7 @@ export function Header({ lastSync, unreadCount, stationName }: HeaderProps) {
           </button>
         </div>
 
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-semibold">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-semibold hidden sm:flex">
           AD
         </div>
       </div>

@@ -45,6 +45,10 @@
   .fade-in {
     animation: fade-in 0.5s ease-out;
   }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 
 @keyframes pulse-live {

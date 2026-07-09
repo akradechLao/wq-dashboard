@@ -10,12 +10,49 @@ import { SettingsPage } from './components/dashboard/SettingsPage';
 import { stations as initialStations } from './data/mockData';
 import type { Station } from './types';
 
+import { LayoutDashboard, BarChart3, Bell, Settings, Lock } from 'lucide-react';
+
 type View = { page: 'summary' } | { page: 'detail'; stationId: string };
 
 const DEFAULT_PASSWORD = '1975';
 
 function getPassword(): string {
   return localStorage.getItem('wq_admin_pwd') || DEFAULT_PASSWORD;
+}
+
+function MobileBottomNav({ activeTab, onTabChange }: { activeTab: string; onTabChange: (t: string) => void }) {
+  const items = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+    { id: 'alerts', icon: Bell, label: 'Alerts' },
+    { id: 'settings', icon: Settings, label: 'Settings' },
+  ];
+
+  return (
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 px-2 py-1 safe-bottom">
+      <div className="flex items-center justify-around">
+        {items.map(item => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id || (item.id === 'settings' && activeTab === 'settings-auth');
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
+                isActive ? 'text-primary-600' : 'text-slate-400'
+              }`}
+            >
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {item.id === 'settings' && <Lock className="w-2.5 h-2.5 absolute -top-0.5 -right-1.5 text-slate-300" />}
+              </div>
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
 }
 
 function App() {
@@ -96,7 +133,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
-      <div className="ml-[220px] transition-all duration-300">
+      <div className="lg:ml-[220px] ml-0 transition-all duration-300 pb-16 lg:pb-0">
         <Header lastSync={new Date()} unreadCount={totalUnread} stationName={currentStation?.name} />
         <main className="min-h-[calc(100vh-4rem)]">
           {activeTab === 'dashboard' && view.page === 'summary' && (
@@ -121,6 +158,7 @@ function App() {
           )}
         </main>
       </div>
+      <MobileBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 }
