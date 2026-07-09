@@ -114,6 +114,11 @@ function App() {
     }
   }, [isSettingsAuthed]);
 
+  const handleBellClick = useCallback(() => {
+    setActiveTab('alerts');
+    setView({ page: 'summary' });
+  }, []);
+
   const totalUnread = stationsData.reduce((sum, s) => sum + s.alerts.filter(a => !a.acknowledged).length, 0);
 
   const handleBackToDashboard = useCallback(() => {
@@ -134,7 +139,7 @@ function App() {
     <div className="min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
       <div className="lg:ml-[220px] ml-0 transition-all duration-300 pb-16 lg:pb-0">
-        <Header lastSync={new Date()} unreadCount={totalUnread} stationName={currentStation?.name} />
+        <Header lastSync={new Date()} unreadCount={totalUnread} stationName={currentStation?.name} onBellClick={handleBellClick} />
         <main className="min-h-[calc(100vh-4rem)]">
           {activeTab === 'dashboard' && view.page === 'summary' && (
             <StationSummaryPage stations={stationsData} onSelectStation={handleSelectStation} cameras={cameras} />

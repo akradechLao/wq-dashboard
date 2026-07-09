@@ -106,16 +106,31 @@ function ParameterDetailCard({ param, index }: { param: WaterParameter; index: n
 function MultiAxisTrendChart({ station }: { station: Station }) {
   const trendData = useMemo(() => generateTrendData(station.parameters), [station]);
 
-  const yAxisList = station.parameters.slice(0, 3).map((p, i) => ({
-    type: 'value' as const,
-    name: p.name,
-    position: i === 0 ? 'left' : 'right' as const,
-    nameTextStyle: { color: paramColors[p.id], fontSize: 10 },
-    axisLine: { show: i === 0, lineStyle: { color: paramColors[p.id] } },
-    axisTick: { show: false },
-    splitLine: { show: i === 0, lineStyle: { color: '#f1f5f9', type: 'dashed' as const } },
-    axisLabel: { color: paramColors[p.id], fontSize: 9 },
-  }));
+  const lowScaleParams = station.parameters.filter(p => p.max <= 100);
+  const highScaleParams = station.parameters.filter(p => p.max > 100);
+
+  const yAxisList = [
+    ...(lowScaleParams.length > 0 ? [{
+      type: 'value' as const,
+      name: 'Low Scale',
+      position: 'left' as const,
+      nameTextStyle: { color: '#64748b', fontSize: 10 },
+      axisLine: { show: true, lineStyle: { color: '#3b82f6' } },
+      axisTick: { show: false },
+      splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' as const } },
+      axisLabel: { color: '#64748b', fontSize: 9 },
+    }] : []),
+    ...(highScaleParams.length > 0 ? [{
+      type: 'value' as const,
+      name: 'High Scale',
+      position: 'right' as const,
+      nameTextStyle: { color: '#64748b', fontSize: 10 },
+      axisLine: { show: true, lineStyle: { color: '#f59e0b' } },
+      axisTick: { show: false },
+      splitLine: { show: false },
+      axisLabel: { color: '#64748b', fontSize: 9 },
+    }] : []),
+  ];
 
   const option = {
     tooltip: {
@@ -141,20 +156,21 @@ function MultiAxisTrendChart({ station }: { station: Station }) {
       axisLabel: { color: '#94a3b8', fontSize: 9, interval: 3 },
     },
     yAxis: yAxisList,
-    series: station.parameters.map((p, i) => ({
-      name: p.name,
-      type: 'line',
-      yAxisIndex: i % 3,
-      data: trendData.series[p.id],
-      smooth: true,
-      symbol: 'none',
-      lineStyle: { width: 2, color: paramColors[p.id] },
-      itemStyle: { color: paramColors[p.id] },
-      emphasis: { lineStyle: { width: 3 } },
-      areaStyle: i === 0 ? {
-        color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: paramColors[p.id] + '20' }, { offset: 1, color: 'rgba(255,255,255,0)' }] },
-      } : undefined,
-    })),
+    series: station.parameters.map((p) => {
+      const isHighScale = p.max > 100;
+      const yAxisIndex = isHighScale ? (lowScaleParams.length > 0 ? 1 : 0) : 0;
+      return {
+        name: p.name,
+        type: 'line',
+        yAxisIndex,
+        data: trendData.series[p.id],
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 2, color: paramColors[p.id] },
+        itemStyle: { color: paramColors[p.id] },
+        emphasis: { lineStyle: { width: 3 } },
+      };
+    }),
     animationDuration: 1200,
     animationEasing: 'cubicOut',
   };
@@ -322,6 +338,13 @@ function DailyHeatmap() {
 
 function RadarComparison({ station }: { station: Station }) {
   const option = {
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      borderColor: '#e2e8f0',
+      borderWidth: 1,
+      textStyle: { color: '#334155', fontSize: 11 },
+    },
     radar: {
       indicator: station.parameters.map(p => ({ name: p.name, max: p.max })),
       shape: 'polygon',

@@ -166,19 +166,11 @@ export function StationSummaryPage({ stations, onSelectStation, cameras = [] }: 
                 <span className="text-xs font-medium text-slate-600">{healthPct}%</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {station.parameters.slice(0, 4).map(p => (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {station.parameters.map(p => (
                   <ParamMiniCard key={p.id} param={p} />
                 ))}
               </div>
-
-              {station.parameters.length > 4 && (
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  {station.parameters.slice(4).map(p => (
-                    <ParamMiniCard key={p.id} param={p} />
-                  ))}
-                </div>
-              )}
 
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <div className="flex items-center gap-2">
