@@ -7,7 +7,7 @@ import { StationDetailPage } from './components/dashboard/StationDetailPage';
 import { AnalyticsPage } from './components/dashboard/AnalyticsPage';
 import { AlertsPage } from './components/dashboard/AlertsPage';
 import { SettingsPage } from './components/dashboard/SettingsPage';
-import { stations as initialStations } from './data/mockData';
+import { stations as initialStations, cameras } from './data/mockData';
 import type { Station } from './types';
 
 import { LayoutDashboard, BarChart3, Bell, Settings, Lock } from 'lucide-react';
@@ -137,7 +137,7 @@ function App() {
         <Header lastSync={new Date()} unreadCount={totalUnread} stationName={currentStation?.name} />
         <main className="min-h-[calc(100vh-4rem)]">
           {activeTab === 'dashboard' && view.page === 'summary' && (
-            <StationSummaryPage stations={stationsData} onSelectStation={handleSelectStation} />
+            <StationSummaryPage stations={stationsData} onSelectStation={handleSelectStation} cameras={cameras} />
           )}
           {activeTab === 'dashboard' && view.page === 'detail' && currentStation && (
             <StationDetailPage station={currentStation} onBack={handleBack} />

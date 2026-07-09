@@ -1,10 +1,12 @@
 import ReactECharts from 'echarts-for-react';
 import { MapPin, Activity, AlertTriangle, Clock, TrendingUp, TrendingDown, Minus, ChevronRight, Wifi, WifiOff } from 'lucide-react';
-import type { Station, WaterParameter } from '../../types';
+import type { Station, WaterParameter, Camera } from '../../types';
+import { CameraSection } from './CameraSection';
 
 interface StationSummaryPageProps {
   stations: Station[];
   onSelectStation: (id: string) => void;
+  cameras?: Camera[];
 }
 
 function MiniSparkline({ data, color }: { data: number[]; color: string }) {
@@ -54,7 +56,7 @@ function ParamMiniCard({ param }: { param: WaterParameter }) {
   );
 }
 
-export function StationSummaryPage({ stations, onSelectStation }: StationSummaryPageProps) {
+export function StationSummaryPage({ stations, onSelectStation, cameras = [] }: StationSummaryPageProps) {
   const totalAlerts = stations.reduce((sum, s) => sum + s.alerts.filter(a => !a.acknowledged).length, 0);
   const totalParams = stations.reduce((sum, s) => sum + s.parameters.filter(p => p.status === 'normal').length, 0);
   const totalParamCount = stations.reduce((sum, s) => sum + s.parameters.length, 0);
@@ -199,6 +201,10 @@ export function StationSummaryPage({ stations, onSelectStation }: StationSummary
           );
         })}
       </div>
+
+      {cameras.length > 0 && (
+        <CameraSection cameras={cameras} />
+      )}
     </div>
   );
 }

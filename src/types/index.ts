@@ -50,3 +50,13 @@ export interface LogEntry {
   status: ParameterStatus;
   stationId: string;
 }
+
+export interface Camera {
+  id: string;
+  name: string;
+  stationId: string;
+  stationName: string;
+  location: string;
+  status: 'online' | 'offline' | 'maintenance';
+  lastSync: Date;
+}

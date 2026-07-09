@@ -1,4 +1,4 @@
-import type { WaterParameter, LogEntry, Station } from '../types';
+import type { WaterParameter, LogEntry, Station, Camera } from '../types';
 
 function createParameters(baseValues: Record<string, number>): WaterParameter[] {
   const defs: Array<{
@@ -104,3 +104,24 @@ export function generateHeatmapData() {
     Array.from({ length: 24 }, (_, hour) => [hour, day, Math.round(Math.random() * 10 * 10) / 10])
   ).flat();
 }
+
+export const cameras: Camera[] = [
+  {
+    id: 'cam-001',
+    name: 'CAM-A-01',
+    stationId: 'stn-001',
+    stationName: 'Station A',
+    location: 'Factory Effluent Point 1 - Zone A',
+    status: 'online',
+    lastSync: new Date(),
+  },
+  {
+    id: 'cam-002',
+    name: 'CAM-B-01',
+    stationId: 'stn-002',
+    stationName: 'Station B',
+    location: 'Factory Effluent Point 2 - Zone B',
+    status: 'online',
+    lastSync: new Date(),
+  },
+];
