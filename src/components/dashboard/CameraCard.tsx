@@ -1,5 +1,5 @@
 import { Camera as CameraIcon, Maximize2, Wifi, WifiOff, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Camera } from '../../types';
 
 interface CameraCardProps {
@@ -9,7 +9,9 @@ interface CameraCardProps {
 
 export function CameraCard({ camera, index }: CameraCardProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isOnline = camera.status === 'online';
+  const hasVideo = !!camera.videoUrl;
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -22,23 +24,39 @@ export function CameraCard({ camera, index }: CameraCardProps) {
         style={{ animationDelay: `${index * 100}ms` }}
       >
         <div className="relative bg-slate-900 aspect-video">
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            {isOnline ? (
-              <>
-                <div className="relative">
-                  <CameraIcon className="w-12 h-12 text-slate-600" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-                </div>
-                <span className="text-xs text-slate-500 mt-2">Live Feed</span>
-                <span className="text-[10px] text-slate-600 mt-0.5">{camera.name}</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-10 h-10 text-slate-600" />
-                <span className="text-xs text-slate-500 mt-2">Offline</span>
-              </>
-            )}
-          </div>
+          {hasVideo ? (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              onError={(e) => {
+                (e.target as HTMLVideoElement).style.display = 'none';
+              }}
+            >
+              <source src={camera.videoUrl} type="video/mp4" />
+            </video>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {isOnline ? (
+                <>
+                  <div className="relative">
+                    <CameraIcon className="w-12 h-12 text-slate-600" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                  </div>
+                  <span className="text-xs text-slate-500 mt-2">Live Feed</span>
+                  <span className="text-[10px] text-slate-600 mt-0.5">{camera.name}</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-10 h-10 text-slate-600" />
+                  <span className="text-xs text-slate-500 mt-2">Offline</span>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="absolute top-2 left-2 flex items-center gap-1.5">
             <div className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${
@@ -89,20 +107,35 @@ export function CameraCard({ camera, index }: CameraCardProps) {
             onClick={e => e.stopPropagation()}
           >
             <div className="relative bg-slate-900 aspect-video">
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                {isOnline ? (
-                  <>
-                    <CameraIcon className="w-20 h-20 text-slate-600" />
-                    <span className="text-sm text-slate-500 mt-3">Live Feed - {camera.name}</span>
-                    <span className="text-xs text-slate-600 mt-1">{camera.location}</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="w-16 h-16 text-slate-600" />
-                    <span className="text-sm text-slate-500 mt-3">Camera Offline</span>
-                  </>
-                )}
-              </div>
+              {hasVideo ? (
+                <video
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  onError={(e) => {
+                    (e.target as HTMLVideoElement).style.display = 'none';
+                  }}
+                >
+                  <source src={camera.videoUrl} type="video/mp4" />
+                </video>
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  {isOnline ? (
+                    <>
+                      <CameraIcon className="w-20 h-20 text-slate-600" />
+                      <span className="text-sm text-slate-500 mt-3">Live Feed - {camera.name}</span>
+                      <span className="text-xs text-slate-600 mt-1">{camera.location}</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="w-16 h-16 text-slate-600" />
+                      <span className="text-sm text-slate-500 mt-3">Camera Offline</span>
+                    </>
+                  )}
+                </div>
+              )}
               <div className="absolute top-3 left-3 flex items-center gap-2">
                 <div className={`px-2 py-1 rounded text-xs font-semibold ${
                   isOnline ? 'bg-emerald-500/80 text-white' : 'bg-slate-600/80 text-slate-300'

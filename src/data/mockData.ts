@@ -114,6 +114,7 @@ export const cameras: Camera[] = [
     location: 'Factory Effluent Point 1 - Zone A',
     status: 'online',
     lastSync: new Date(),
+    videoUrl: 'https://cdn.pixabay.com/video/2020/07/27/45706-446485457_large.mp4',
   },
   {
     id: 'cam-002',
@@ -123,5 +124,6 @@ export const cameras: Camera[] = [
     location: 'Factory Effluent Point 2 - Zone B',
     status: 'online',
     lastSync: new Date(),
+    videoUrl: 'https://cdn.pixabay.com/video/2016/08/19/4593-179528857_large.mp4',
   },
 ];

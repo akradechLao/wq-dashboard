@@ -59,4 +59,5 @@ export interface Camera {
   location: string;
   status: 'online' | 'offline' | 'maintenance';
   lastSync: Date;
+  videoUrl?: string;
 }
