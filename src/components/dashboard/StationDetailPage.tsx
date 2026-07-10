@@ -257,6 +257,16 @@ function CorrelationScatterChart({ station }: { station: Station }) {
 }
 
 function DistributionBoxPlot({ station }: { station: Station }) {
+  const shortNames: Record<string, string> = {
+    ph: 'pH',
+    temperature: 'Temp',
+    conductivity: 'TDS',
+    turbidity: 'Turb',
+    do: 'DO',
+    cod: 'COD',
+    bod5: 'BOD5',
+  };
+
   const normalizedData = station.parameters.map(p => {
     const sorted = [...p.history].sort((a, b) => a - b);
     const q1 = sorted[Math.floor(sorted.length * 0.25)];
@@ -268,6 +278,7 @@ function DistributionBoxPlot({ station }: { station: Station }) {
     const normalize = (v: number) => range > 0 ? ((v - p.legalLow) / range) * 100 : 0;
     return {
       name: p.name,
+      shortName: shortNames[p.id] || p.name,
       value: [normalize(min), normalize(q1), normalize(q2), normalize(q3), normalize(max)],
       raw: { min, q1, q2, q3, max, unit: p.unit },
     };
@@ -291,13 +302,13 @@ function DistributionBoxPlot({ station }: { station: Station }) {
           Min: ${d.raw.min.toFixed(1)} ${d.raw.unit}`;
       },
     },
-    grid: { top: 20, right: 20, bottom: 30, left: 50 },
+    grid: { top: 20, right: 20, bottom: 40, left: 50 },
     xAxis: {
       type: 'category',
-      data: station.parameters.map(p => p.name),
+      data: normalizedData.map(d => d.shortName),
       axisLine: { lineStyle: { color: '#e2e8f0' } },
       axisTick: { show: false },
-      axisLabel: { color: '#64748b', fontSize: 10 },
+      axisLabel: { color: '#64748b', fontSize: 9, interval: 0, rotate: 0 },
     },
     yAxis: {
       type: 'value',
