@@ -10,6 +10,35 @@ function StationComparisonChart({ stations }: { stations: Station[] }) {
   const paramIds = stations[0]?.parameters.map(p => p.id) || [];
   const paramNames = stations[0]?.parameters.map(p => p.name) || [];
 
+  const normalizedData = stations.map((station, si) => ({
+    name: station.name.split(' - ')[0],
+    type: 'bar' as const,
+    barWidth: '30%',
+    data: paramIds.map(pid => {
+      const p = station.parameters.find(pp => pp.id === pid);
+      if (!p) return 0;
+      const range = p.legalHigh - p.legalLow;
+      if (range === 0) return 0;
+      return Math.round(((p.value - p.legalLow) / range) * 100);
+    }),
+    itemStyle: {
+      color: si === 0 ? '#3b82f6' : '#10b981',
+      borderRadius: [4, 4, 0, 0],
+    },
+    label: {
+      show: true,
+      position: 'top' as const,
+      fontSize: 10,
+      fontWeight: 600,
+      color: '#475569',
+      formatter: (params: any) => {
+        const p = station.parameters.find(pp => pp.id === paramIds[params.dataIndex]);
+        if (!p) return '';
+        return `${p.value}${p.unit ? ' ' + p.unit : ''}`;
+      },
+    },
+  }));
+
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -17,6 +46,17 @@ function StationComparisonChart({ stations }: { stations: Station[] }) {
       borderColor: '#e2e8f0',
       borderWidth: 1,
       textStyle: { color: '#334155', fontSize: 11 },
+      formatter: (params: any) => {
+        let html = `<b>${params[0].axisValue}</b><br/>`;
+        params.forEach((p: any) => {
+          const station = stations.find(s => s.name.split(' - ')[0] === p.seriesName);
+          const param = station?.parameters.find(pp => pp.id === paramIds[p.dataIndex]);
+          if (param) {
+            html += `<span style="color:${p.color}">${p.seriesName}</span>: ${param.value} ${param.unit || ''}<br/>`;
+          }
+        });
+        return html;
+      },
     },
     legend: {
       data: stations.map(s => s.name.split(' - ')[0]),
@@ -35,26 +75,15 @@ function StationComparisonChart({ stations }: { stations: Station[] }) {
     },
     yAxis: {
       type: 'value',
-      name: 'Value',
+      name: '% of Legal Limit',
       nameTextStyle: { color: '#94a3b8', fontSize: 10 },
+      max: 100,
       axisLine: { show: false },
       axisTick: { show: false },
       splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
-      axisLabel: { color: '#94a3b8', fontSize: 9 },
+      axisLabel: { color: '#94a3b8', fontSize: 9, formatter: '{value}%' },
     },
-    series: stations.map((station, si) => ({
-      name: station.name.split(' - ')[0],
-      type: 'bar',
-      barWidth: '30%',
-      data: paramIds.map(pid => {
-        const p = station.parameters.find(pp => pp.id === pid);
-        return p ? p.value : 0;
-      }),
-      itemStyle: {
-        color: si === 0 ? '#3b82f6' : '#10b981',
-        borderRadius: [4, 4, 0, 0],
-      },
-    })),
+    series: normalizedData,
   };
 
   return (
