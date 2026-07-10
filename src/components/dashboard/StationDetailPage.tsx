@@ -257,6 +257,22 @@ function CorrelationScatterChart({ station }: { station: Station }) {
 }
 
 function DistributionBoxPlot({ station }: { station: Station }) {
+  const normalizedData = station.parameters.map(p => {
+    const sorted = [...p.history].sort((a, b) => a - b);
+    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+    const q2 = sorted[Math.floor(sorted.length * 0.5)];
+    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+    const range = p.legalHigh - p.legalLow;
+    const normalize = (v: number) => range > 0 ? ((v - p.legalLow) / range) * 100 : 0;
+    return {
+      name: p.name,
+      value: [normalize(min), normalize(q1), normalize(q2), normalize(q3), normalize(max)],
+      raw: { min, q1, q2, q3, max, unit: p.unit },
+    };
+  });
+
   const option = {
     tooltip: {
       trigger: 'item',
@@ -264,6 +280,16 @@ function DistributionBoxPlot({ station }: { station: Station }) {
       borderColor: '#e2e8f0',
       borderWidth: 1,
       textStyle: { color: '#334155', fontSize: 11 },
+      formatter: (params: any) => {
+        const d = normalizedData[params.dataIndex];
+        if (!d) return '';
+        return `<b>${d.name}</b><br/>
+          Max: ${d.raw.max.toFixed(1)} ${d.raw.unit}<br/>
+          Q3: ${d.raw.q3.toFixed(1)} ${d.raw.unit}<br/>
+          Median: ${d.raw.q2.toFixed(1)} ${d.raw.unit}<br/>
+          Q1: ${d.raw.q1.toFixed(1)} ${d.raw.unit}<br/>
+          Min: ${d.raw.min.toFixed(1)} ${d.raw.unit}`;
+      },
     },
     grid: { top: 20, right: 20, bottom: 30, left: 50 },
     xAxis: {
@@ -275,24 +301,17 @@ function DistributionBoxPlot({ station }: { station: Station }) {
     },
     yAxis: {
       type: 'value',
-      name: 'Value Range',
+      name: '% of Legal Limit',
       nameTextStyle: { color: '#94a3b8', fontSize: 10 },
+      max: 100,
       axisLine: { show: false },
       axisTick: { show: false },
       splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
-      axisLabel: { color: '#94a3b8', fontSize: 9 },
+      axisLabel: { color: '#94a3b8', fontSize: 9, formatter: '{value}%' },
     },
     series: [{
       type: 'boxplot',
-      data: station.parameters.map(p => {
-        const sorted = [...p.history].sort((a, b) => a - b);
-        const q1 = sorted[Math.floor(sorted.length * 0.25)];
-        const q2 = sorted[Math.floor(sorted.length * 0.5)];
-        const q3 = sorted[Math.floor(sorted.length * 0.75)];
-        const min = sorted[0];
-        const max = sorted[sorted.length - 1];
-        return [min, q1, q2, q3, max];
-      }),
+      data: normalizedData.map(d => d.value),
       itemStyle: { color: '#dbeafe', borderColor: '#3b82f6', borderWidth: 1.5 },
       emphasis: { itemStyle: { borderColor: '#1d4ed8', borderWidth: 2 } },
     }],
