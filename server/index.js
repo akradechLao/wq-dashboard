@@ -32,6 +32,16 @@ const PARAM_NAMES = {
   bod5: 'BOD5',
 };
 
+const PARAM_NAMES_TH = {
+  ph: 'ค่าความเป็นกรด-ด่าง (pH)',
+  temperature: 'อุณหภูมิ',
+  conductivity: 'ค่าการนำไฟฟ้า (TDS)',
+  turbidity: 'ความขุ่น',
+  do: 'ออกซิเจนละลายน้ำ (DO)',
+  cod: 'สารอินทรีย์ปนเปื้อน (COD)',
+  bod5: 'จุลินทรีย์ย่อยสลาย (BOD5)',
+};
+
 const PARAM_UNITS = {
   ph: '',
   temperature: '°C',
@@ -40,6 +50,11 @@ const PARAM_UNITS = {
   do: 'mg/L',
   cod: 'mg/L',
   bod5: 'mg/L',
+};
+
+const STATUS_TH = {
+  critical: '⚠️ วิกฤต - เกินเกณฑ์มาตรฐาน',
+  warning: '⚡ เตือน - ใกล้เกณฑ์มาตรฐาน',
 };
 
 function checkParameterStatus(paramId, value) {
@@ -89,19 +104,21 @@ async function sendTelegramMessage(message) {
 }
 
 function formatAlertMessage(stationName, alerts) {
-  let message = `🚨 <b>Water Quality Alert</b>\n\n`;
-  message += `📍 Station: <b>${stationName}</b>\n`;
-  message += `🕐 Time: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })}\n\n`;
+  let message = `🚨 <b>แจ้งเตือนคุณภาพน้ำ</b>\n\n`;
+  message += `📍 สถานี: <b>${stationName}</b>\n`;
+  message += `🕐 เวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}\n\n`;
   
   alerts.forEach(alert => {
     const icon = alert.status === 'critical' ? '🔴' : '🟡';
-    const statusText = alert.status.toUpperCase();
-    message += `${icon} <b>${statusText}</b>: ${alert.name}\n`;
-    message += `   Value: ${alert.value} ${alert.unit}\n`;
-    message += `   Legal Limit: ${alert.legalLow} - ${alert.legalHigh}\n\n`;
+    const statusText = STATUS_TH[alert.status] || alert.status;
+    const paramNameThai = PARAM_NAMES_TH[alert.id] || alert.name;
+    message += `${icon} <b>${statusText}</b>\n`;
+    message += `   ตรวจวัด: ${paramNameThai}\n`;
+    message += `   ค่าปัจจุบัน: ${alert.value} ${alert.unit}\n`;
+    message += `   เกณฑ์มาตรฐาน: ${alert.legalLow} - ${alert.legalHigh} ${alert.unit}\n\n`;
   });
   
-  message += `🌐 Dashboard: https://akradechlao.github.io/wq-dashboard/`;
+  message += `🌐 ดูรายละเอียด: https://akradechlao.github.io/wq-dashboard/`;
   
   return message;
 }
@@ -141,7 +158,7 @@ app.post('/api/alerts', async (req, res) => {
 });
 
 app.post('/api/test', async (req, res) => {
-  const message = `✅ <b>Test Message</b>\n\nWater Quality Monitoring System is connected!\n🕐 Time: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })}`;
+  const message = `✅ <b>ทดสอบระบบสำเร็จ</b>\n\nระบบแจ้งเตือนคุณภาพน้ำเชื่อมต่อเรียบร้อยแล้ว!\n🕐 เวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`;
   
   const result = await sendTelegramMessage(message);
   
