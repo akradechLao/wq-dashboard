@@ -64,6 +64,8 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
           value: alert.value,
         }));
 
+        console.log('Sending alerts to Telegram:', { stationName: station.name, parameters });
+
         const response = await fetch(`${API_BASE_URL}/api/alerts`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -75,6 +77,8 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
         });
 
         const data = await response.json();
+        console.log('Telegram response:', data);
+        
         if (data.success) {
           totalSent += data.alertsSent;
           activeAlerts.forEach(a => {
@@ -88,13 +92,16 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
         setTimeout(() => setSendResult(null), 3000);
       }
     } catch (error) {
-      // Silently fail for auto-send
+      console.error('Error sending to Telegram:', error);
+      setSendResult('Error: Could not connect to server');
+      setTimeout(() => setSendResult(null), 3000);
     } finally {
       setSending(false);
     }
   };
 
   useEffect(() => {
+    console.log('AlertsPage loaded, checking for alerts...');
     const hasUnsentAlerts = stations.some(s => 
       s.alerts.some(a => {
         if (a.acknowledged) return false;
@@ -103,10 +110,13 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
       })
     );
 
+    console.log('Has unsent alerts:', hasUnsentAlerts);
+    console.log('Stations:', stations.map(s => ({ name: s.name, alerts: s.alerts.length })));
+
     if (hasUnsentAlerts && !sending) {
       sendAlertsToTelegram();
     }
-  }, [stations]);
+  }, []);
 
   return (
     <div className="p-6 space-y-5">
