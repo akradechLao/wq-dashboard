@@ -1,5 +1,5 @@
 import { AlertTriangle, AlertCircle, CheckCircle2, Clock, Bell, Send } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Station } from '../../types';
 
 interface AlertsPageProps {
@@ -14,6 +14,7 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
   const [severityFilter, setSeverityFilter] = useState<'all' | 'warning' | 'critical'>('all');
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<string | null>(null);
+  const sentAlertsRef = useRef<Set<string>>(new Set());
 
   const allAlerts = stations.flatMap(s =>
     s.alerts.map(a => ({ ...a, stationName: s.name, stationId: s.id }))
@@ -39,15 +40,23 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
-  const sendAlertsToTelegram = async () => {
+  const sendAlertsToTelegram = async (alertsToSend?: typeof stations) => {
     setSending(true);
     setSendResult(null);
+
+    const stationsToCheck = alertsToSend || stations;
 
     try {
       let totalSent = 0;
 
-      for (const station of stations) {
-        const activeAlerts = station.alerts.filter(a => !a.acknowledged);
+      for (const station of stationsToCheck) {
+        const activeAlerts = station.alerts.filter(a => {
+          if (a.acknowledged) return false;
+          const alertKey = `${station.id}-${a.id}`;
+          if (sentAlertsRef.current.has(alertKey)) return false;
+          return true;
+        });
+        
         if (activeAlerts.length === 0) continue;
 
         const parameters = activeAlerts.map(alert => ({
@@ -68,17 +77,36 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
         const data = await response.json();
         if (data.success) {
           totalSent += data.alertsSent;
+          activeAlerts.forEach(a => {
+            sentAlertsRef.current.add(`${station.id}-${a.id}`);
+          });
         }
       }
 
-      setSendResult(`Sent ${totalSent} alert(s) to Telegram`);
+      if (totalSent > 0) {
+        setSendResult(`Auto-sent ${totalSent} alert(s) to Telegram`);
+        setTimeout(() => setSendResult(null), 3000);
+      }
     } catch (error) {
-      setSendResult('Error: Could not connect to server');
+      // Silently fail for auto-send
     } finally {
       setSending(false);
-      setTimeout(() => setSendResult(null), 3000);
     }
   };
+
+  useEffect(() => {
+    const hasUnsentAlerts = stations.some(s => 
+      s.alerts.some(a => {
+        if (a.acknowledged) return false;
+        const alertKey = `${s.id}-${a.id}`;
+        return !sentAlertsRef.current.has(alertKey);
+      })
+    );
+
+    if (hasUnsentAlerts && !sending) {
+      sendAlertsToTelegram();
+    }
+  }, [stations]);
 
   return (
     <div className="p-6 space-y-5">
@@ -93,7 +121,7 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
           </div>
         </div>
         <button
-          onClick={sendAlertsToTelegram}
+          onClick={() => sendAlertsToTelegram()}
           disabled={sending || activeCount === 0}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             sending || activeCount === 0
