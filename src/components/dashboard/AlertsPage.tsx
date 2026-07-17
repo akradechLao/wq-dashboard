@@ -57,7 +57,7 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
 
         const response = await fetch(`${API_BASE_URL}/api/alerts`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({
             stationId: station.id,
             stationName: station.name,
