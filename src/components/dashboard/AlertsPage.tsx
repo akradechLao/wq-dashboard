@@ -1,4 +1,4 @@
-import { AlertTriangle, AlertCircle, CheckCircle2, Clock, Bell } from 'lucide-react';
+import { AlertTriangle, AlertCircle, CheckCircle2, Clock, Bell, Send } from 'lucide-react';
 import { useState } from 'react';
 import type { Station } from '../../types';
 
@@ -7,9 +7,13 @@ interface AlertsPageProps {
   onAcknowledge: (stationId: string, alertId: string) => void;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
   const [filter, setFilter] = useState<'all' | 'active' | 'acknowledged'>('all');
   const [severityFilter, setSeverityFilter] = useState<'all' | 'warning' | 'critical'>('all');
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState<string | null>(null);
 
   const allAlerts = stations.flatMap(s =>
     s.alerts.map(a => ({ ...a, stationName: s.name, stationId: s.id }))
@@ -35,6 +39,47 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
+  const sendAlertsToTelegram = async () => {
+    setSending(true);
+    setSendResult(null);
+
+    try {
+      let totalSent = 0;
+
+      for (const station of stations) {
+        const activeAlerts = station.alerts.filter(a => !a.acknowledged);
+        if (activeAlerts.length === 0) continue;
+
+        const parameters = activeAlerts.map(alert => ({
+          id: alert.parameter.toLowerCase().replace(/\s+/g, ''),
+          value: alert.value,
+        }));
+
+        const response = await fetch(`${API_BASE_URL}/api/alerts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stationId: station.id,
+            stationName: station.name,
+            parameters,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          totalSent += data.alertsSent;
+        }
+      }
+
+      setSendResult(`Sent ${totalSent} alert(s) to Telegram`);
+    } catch (error) {
+      setSendResult('Error: Could not connect to server');
+    } finally {
+      setSending(false);
+      setTimeout(() => setSendResult(null), 3000);
+    }
+  };
+
   return (
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between">
@@ -47,7 +92,27 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
             <p className="text-sm text-slate-400">Monitor and manage all alerts</p>
           </div>
         </div>
+        <button
+          onClick={sendAlertsToTelegram}
+          disabled={sending || activeCount === 0}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            sending || activeCount === 0
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+        >
+          <Send className={`w-4 h-4 ${sending ? 'animate-pulse' : ''}`} />
+          {sending ? 'Sending...' : 'Send to Telegram'}
+        </button>
       </div>
+
+      {sendResult && (
+        <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
+          sendResult.startsWith('Error') ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'
+        }`}>
+          {sendResult}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4">
