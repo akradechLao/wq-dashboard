@@ -1,5 +1,5 @@
-const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
-const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '';
+const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '8916913132:AAHocCFu6TClwMy-F3yc_qbg60MEvE1Wi34';
+const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '7889146902';
 
 const PARAM_NAMES_TH: Record<string, string> = {
   ph: 'ค่าความเป็นกรด-ด่าง (pH)',
