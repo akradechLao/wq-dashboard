@@ -1,13 +1,12 @@
 import { AlertTriangle, AlertCircle, CheckCircle2, Clock, Bell, Send } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import type { Station } from '../../types';
+import { sendTelegramAlert, isTelegramConfigured } from '../../services/telegram';
 
 interface AlertsPageProps {
   stations: Station[];
   onAcknowledge: (stationId: string, alertId: string) => void;
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
   const [filter, setFilter] = useState<'all' | 'active' | 'acknowledged'>('all');
@@ -41,6 +40,12 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
   };
 
   const sendAlertsToTelegram = async (alertsToSend?: typeof stations) => {
+    if (!isTelegramConfigured()) {
+      setSendResult('Error: Telegram not configured');
+      setTimeout(() => setSendResult(null), 3000);
+      return;
+    }
+
     setSending(true);
     setSendResult(null);
 
@@ -59,28 +64,15 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
         
         if (activeAlerts.length === 0) continue;
 
-        const parameters = activeAlerts.map(alert => ({
+        const alerts = activeAlerts.map(alert => ({
           id: alert.parameter.toLowerCase().replace(/\s+/g, ''),
           value: alert.value,
+          status: alert.severity,
         }));
 
-        console.log('Sending alerts to Telegram:', { stationName: station.name, parameters });
-
-        const response = await fetch(`${API_BASE_URL}/api/alerts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
-          body: JSON.stringify({
-            stationId: station.id,
-            stationName: station.name,
-            parameters,
-          }),
-        });
-
-        const data = await response.json();
-        console.log('Telegram response:', data);
-        
-        if (data.success) {
-          totalSent += data.alertsSent;
+        const ok = await sendTelegramAlert(station.name, alerts);
+        if (ok) {
+          totalSent += alerts.length;
           activeAlerts.forEach(a => {
             sentAlertsRef.current.add(`${station.id}-${a.id}`);
           });
@@ -88,12 +80,12 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
       }
 
       if (totalSent > 0) {
-        setSendResult(`Auto-sent ${totalSent} alert(s) to Telegram`);
+        setSendResult(`Sent ${totalSent} alert(s) to Telegram`);
         setTimeout(() => setSendResult(null), 3000);
       }
     } catch (error) {
       console.error('Error sending to Telegram:', error);
-      setSendResult('Error: Could not connect to server');
+      setSendResult('Error sending to Telegram');
       setTimeout(() => setSendResult(null), 3000);
     } finally {
       setSending(false);
@@ -101,7 +93,8 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
   };
 
   useEffect(() => {
-    console.log('AlertsPage loaded, checking for alerts...');
+    if (!isTelegramConfigured()) return;
+
     const hasUnsentAlerts = stations.some(s => 
       s.alerts.some(a => {
         if (a.acknowledged) return false;
@@ -109,9 +102,6 @@ export function AlertsPage({ stations, onAcknowledge }: AlertsPageProps) {
         return !sentAlertsRef.current.has(alertKey);
       })
     );
-
-    console.log('Has unsent alerts:', hasUnsentAlerts);
-    console.log('Stations:', stations.map(s => ({ name: s.name, alerts: s.alerts.length })));
 
     if (hasUnsentAlerts && !sending) {
       sendAlertsToTelegram();
